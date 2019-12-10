@@ -10,7 +10,7 @@ use crate::error::*;
 pub struct CmdLine {
     /// Activate debug mode
     #[structopt(short, long)]
-    debug: bool,
+    pub debug: bool,
 
     /// Configuration file
     #[structopt(short, long, parse(from_os_str))]
@@ -24,11 +24,27 @@ pub struct ConfigFile {
 
     #[serde(default)]
     defaults: ServiceDefaults,
+
+    #[serde(default = "mock_services")]
+    services: Vec<Service>,
 }
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct ServiceDefaults {
     keep_alive_min: u16,
+}
+
+#[derive(Debug, PartialEq, Serialize, Deserialize)]
+pub struct Service {
+    host: String,
+    path_prefix: Option<String>,
+    r#type: ServiceType,
+}
+
+#[derive(Debug, PartialEq, Serialize, Deserialize)]
+enum ServiceType {
+    StaticFile { directory: PathBuf },
+    HttpProxy { host: Option<String>, port: u16 },
 }
 
 impl Default for ServiceDefaults {
@@ -53,4 +69,24 @@ impl ConfigFile {
     pub fn load(cmd_line: &CmdLine) -> Result<ConfigFile> {
         ConfigFile::load_path(&cmd_line.config)
     }
+}
+
+fn mock_services() -> Vec<Service> {
+    vec![
+        Service {
+            host: "static-site".to_owned(),
+            path_prefix: None,
+            r#type: ServiceType::StaticFile {
+                directory: "/var/www".to_owned().into(),
+            },
+        },
+        Service {
+            host: "dynamic-site".to_owned(),
+            path_prefix: None,
+            r#type: ServiceType::HttpProxy {
+                host: None,
+                port: 38080,
+            },
+        },
+    ]
 }

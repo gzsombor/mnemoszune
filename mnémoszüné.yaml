@@ -1,3 +1,16 @@
 ---
-port: 38443
-unsecure_port: 38080
+port: 40443
+unsecure_port: 40080
+
+defaults:
+  keep_alive_min: 15
+services:
+  - host: my-static-site
+    type:
+      StaticFile:
+        directory: /var/www
+  - host: jenkins
+    type:
+      HttpProxy:
+        host: ~
+        port: 38080

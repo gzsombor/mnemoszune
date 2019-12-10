@@ -1,5 +1,4 @@
 use serde_yaml::Error as SerdeError;
-use std::ffi::OsString;
 use std::path::PathBuf;
 use thiserror::Error;
 
@@ -14,4 +13,7 @@ pub enum Error {
     },
     #[error("invalid configuration file at {}", path.display())]
     InvalidConfiguration { source: SerdeError, path: PathBuf },
+
+    #[error("unexpected error")]
+    UnexpectedError,
 }
